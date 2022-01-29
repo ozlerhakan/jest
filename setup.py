@@ -28,7 +28,8 @@ if __name__ == "__main__":
         keywords=['python', 'magic tool', 'jupyter', 'notebook', 'jest'],
         install_requires=[
             'requests==2.27.1',
-            'ipython==7.31.1'
+            'ipython==7.31.1',
+            'tqdm==4.62.3'
         ],
         platforms=["linux", "unix"]
     )

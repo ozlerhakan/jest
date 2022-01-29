@@ -33,7 +33,7 @@ except ImportError:
             "(ex. { \"date\": \"@keyword\" })."
     )
 )
-def _cell_magic(line, body):
+def _cell_magic(line, cell_body):
     """Underlying function for jest cell magic
 
     Note:
@@ -42,58 +42,75 @@ def _cell_magic(line, body):
 
     Args:
         line (str): "%%jest" followed by arguments as required
-        body (str): a body providing the metadata of request options
+        cell_body (json str): a body providing the metadata of request options
 
-        {
-            'url': 'http://milvus.n11.local:80/collections',
-            'request': 'GET',
-            'body': null,
-            'headers':{'accept: application/json'}
-        }
+    Example: In Jupyter notebook we have two cells. First cell provides a list of
+    dictionary to feed the body request. We will have two requests for each item in
+    a give json_feed_dict list. Jest will request two requests and save the responses
+    in to the "output" variable as list.
+
+    If `--params` is not provided with the cell magic, we only request one call and
+    jest saves the response to the `output` variable again.
+
+    [1] json_feed_dict = [dict(placeholder='dvalue1'), dict(placeholder='dvalue2')]
+
+    [2] %%jest --var output --params json_feed_dict
+
+    {
+        "url": "http://localhost:8080/request",
+        "request": "post",
+        "body": {
+          "afield": "avalue",
+          "bfield": "bvalue",
+          "cfield": {
+            "dfield": "@placeholder"
+          },
+          "efield": "evalue"
+        },
+        'payload': {"key1": "value1", "key2": "value2"},
+        "headers":{"accept": "application/json"}
+    }
 
     Returns:
-        list: the request results.
+        list: the request results in json format.
     """
 
     args = magic_arguments.parse_argstring(_cell_magic, line)
-    meta_data = json.loads(body.strip())
+    meta_data = json.loads(cell_body.strip())
 
     assert meta_data.get('url', None) is not None, "url must be given"
     assert meta_data.get('request', None) is not None, "request must be given"
 
     params = args.params
-    items = get_ipython().user_ns.get(params, [])
+    items = get_ipython().user_ns.get(params, None)
+    assert isinstance(items, list), "params must be a list"
 
     responses = []
     if items:
         for item in tqdm.tqdm(items):
-            assert isinstance(item, dict), "params must be a list of dictionary"
+            assert isinstance(item, dict), "item for the list must be a dictionary"
 
-            body = meta_data.get("body", None).copy()
-            update_request_body(body, item)
+            request_body = meta_data.get("body", None).copy()
+            valid_request_body = update_request_body(request_body, item)
 
-            response = return_response(meta_data, body)
-            try:
-                responses.append(response.json())
-            except RequestsJSONDecodeError:
-                responses.append(response)
+            response = return_response(meta_data, valid_request_body)
+            responses.append(response.json())
     else:
-        body = meta_data.get("body", None)
-        responses.append(return_response(meta_data, body))
+        valid_request_body = meta_data.get("body", None)
+        responses.append(return_response(meta_data, valid_request_body).json())
 
     print("Done.")
     IPython.get_ipython().push({args.var: responses})
 
 
-def update_request_body(body, item):
-    keys = item.keys()
-    for k, v in body.items():
-        for key in keys:
-            if isinstance(body[k], dict):
-                update_request_body(body[k], item)
-            if v == "@" + key:
-                body[k] = item[key]
-                break
+def update_request_body(_request_body, item):
+    keys = {"@" + key: key for key in item.keys()}
+    for k, v in _request_body.items():
+        if isinstance(_request_body[k], dict):
+            _request_body[k] = update_request_body(_request_body[k].copy(), item)
+        elif v in keys:
+            _request_body[k] = item[keys.get(v)]
+    return _request_body
 
 
 def return_response(meta_data, body):
@@ -101,4 +118,10 @@ def return_response(meta_data, body):
     headers = meta_data.get("headers", None)
     request_from_user = meta_data.get("request")
 
-    return request(request_from_user, meta_data.get("url"), params=payload, headers=headers, json=body)
+    return request(
+        request_from_user,
+        meta_data.get("url"),
+        params=payload,
+        headers=headers,
+        json=body
+    )
