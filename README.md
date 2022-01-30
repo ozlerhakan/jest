@@ -13,7 +13,9 @@ $ pip install pyjest
 Please take a look at the `examples` folder about how Jest can be used in a Jupyter notebook in more detail. The snippets below represent a sequence of three cells each of which shows how we can construct a jest call along with required fields for two HTTP calls in one run.   
 
 ```
-[1] consumes = [
+[1] %load_ext jest
+
+[2] consumes = [
     dict(original_keyword='iphone'),
     dict(original_keyword='phone')
 ]
@@ -22,7 +24,7 @@ Please take a look at the `examples` folder about how Jest can be used in a Jupy
 The `consumes` variable holds a list of dictionary. Two different items will be used while jesting a request with a request body.  
 
 ```
-[2] %%jest --var responses --params consumes 
+[3] %%jest --var responses --params consumes 
 
 {
     "url": "http://localhost:8080/path",
