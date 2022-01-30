@@ -6,10 +6,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
 if __name__ == "__main__":
     setup(
         name="pyjest",
-        version="0.0.1",
+        version="0.0.3",
         author="Hakan Ozler",
         author_email="ozler.hakan@gmail.com",
-        description="ipyton magic tool to send HTTP requests in a cell of notebooks",
+        description="ipython magic tool to send HTTP requests in a cell of notebooks",
         long_description=long_description,
         long_description_content_type="text/plain; charset=UTF-8",
         url="https://github.com/ozlerhakan/jest",
