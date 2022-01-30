@@ -5,7 +5,7 @@ Jest is a IPython magic tool to make us one or more HTTP request(s) in a cell.
 ## How it works
 
 ```
-$ pip install jest
+$ pip install pyjest
 ```
 
 ## Examples

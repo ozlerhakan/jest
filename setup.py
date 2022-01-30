@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 if __name__ == "__main__":
     setup(
-        name="jest",
+        name="pyjest",
         version="0.0.1",
         author="Hakan Ozler",
         author_email="ozler.hakan@gmail.com",

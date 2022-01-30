@@ -1,2 +1,3 @@
-requests
-ipython
+requests==2.27.1
+ipython==7.31.1
+tqdm==4.62.3
