@@ -2,7 +2,6 @@ import json
 import tqdm
 
 from requests import request
-from requests.exceptions import JSONDecodeError as RequestsJSONDecodeError
 
 try:
     import IPython
@@ -72,7 +71,7 @@ def _cell_magic(line, cell_body):
     }
 
     Returns:
-        list: the request results in json format.
+        list: the request result(s) in json format.
     """
 
     args = magic_arguments.parse_argstring(_cell_magic, line)
@@ -93,11 +92,11 @@ def _cell_magic(line, cell_body):
             request_body = meta_data.get("body", None).copy()
             valid_request_body = update_request_body(request_body, item)
 
-            response = return_response(meta_data, valid_request_body)
+            response = request_response(meta_data, valid_request_body)
             responses.append(response.json())
     else:
         valid_request_body = meta_data.get("body", None)
-        responses.append(return_response(meta_data, valid_request_body).json())
+        responses.append(request_response(meta_data, valid_request_body).json())
 
     print("Done.")
     IPython.get_ipython().push({args.var: responses})
@@ -113,7 +112,7 @@ def update_request_body(_request_body, item):
     return _request_body
 
 
-def return_response(meta_data, body):
+def request_response(meta_data, body):
     payload = meta_data.get("payload", None)
     headers = meta_data.get("headers", None)
     request_from_user = meta_data.get("request")

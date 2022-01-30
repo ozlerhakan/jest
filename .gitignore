@@ -5,4 +5,3 @@ build
 *.txt
 *.csv
 .idea
-*.ipynb
